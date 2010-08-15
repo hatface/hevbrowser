@@ -136,6 +136,15 @@ static void hev_main_window_web_view_real_load_progress_changed(WebKitWebView * 
 				webkit_web_view_get_progress(web_view));
 }
 
+static WebKitWebView * hev_main_window_web_view_real_create_web_view(WebKitWebView * web_view, WebKitWebFrame * web_frame,
+			gpointer data)
+{
+	HevMainWindow * window = HEV_MAIN_WINDOW(data);
+	HevMainWindowPrivate * priv = HEV_MAIN_WINDOW_GET_PRIVATE(window);
+
+	return web_view;
+}
+
 static void hev_main_window_button_go_back_real_clicked(GtkToolButton * button, gpointer data)
 {
 	HevMainWindow * window = HEV_MAIN_WINDOW(data);
@@ -513,6 +522,8 @@ static void hev_main_window_init(HevMainWindow * self)
 				G_CALLBACK(hev_main_window_web_view_real_load_finished), self);
 	g_signal_connect(G_OBJECT(priv->web_view), "load_progress_changed",
 				G_CALLBACK(hev_main_window_web_view_real_load_progress_changed), self);
+	g_signal_connect(G_OBJECT(priv->web_view), "create_web_view",
+				G_CALLBACK(hev_main_window_web_view_real_create_web_view), self);
 	gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(scrolled_window),
 				priv->web_view);
 

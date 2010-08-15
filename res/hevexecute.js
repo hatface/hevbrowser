@@ -9,6 +9,6 @@
  */
 function main()
 {
-	return '';
+	return 'Hello!';
 }
 
