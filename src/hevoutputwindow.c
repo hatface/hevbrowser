@@ -20,6 +20,53 @@ static void hev_output_window_real_destroy(GtkObject * obj)
 	gtk_widget_hide(GTK_WIDGET(obj));
 }
 
+static void hev_output_window_button_save_real_clicked(GtkToolButton * button, gpointer data)
+{
+	HevOutputWindow * window = HEV_OUTPUT_WINDOW(data);
+	HevOutputWindowPrivate * priv = HEV_OUTPUT_WINDOW_GET_PRIVATE(window);
+	GtkTextBuffer * text_buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(priv->text_view));
+	GtkWidget * dialog = NULL;
+
+	dialog = gtk_file_chooser_dialog_new("Save file",
+				GTK_WINDOW(window),
+				GTK_FILE_CHOOSER_ACTION_SAVE,
+				GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+				GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT,
+				NULL);
+	gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(dialog), TRUE);
+	if(GTK_RESPONSE_ACCEPT == gtk_dialog_run(GTK_DIALOG (dialog)))
+	{
+		gchar * filename = NULL, * text = NULL;
+		GtkTextIter start = {0}, end = {0};
+
+		gtk_text_buffer_get_start_iter(text_buffer, &start);
+		gtk_text_buffer_get_end_iter(text_buffer, &end);
+		text = gtk_text_buffer_get_text(text_buffer, &start, &end, TRUE);
+		filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
+		if(!g_file_set_contents(filename, text, -1, NULL))
+		{
+			GtkWidget * d = gtk_message_dialog_new(GTK_WINDOW(window),
+					GTK_DIALOG_DESTROY_WITH_PARENT,
+					GTK_MESSAGE_ERROR,
+					GTK_BUTTONS_CLOSE,
+					"Save to %s failed!", filename);
+			gtk_dialog_run(GTK_DIALOG(d));
+			gtk_widget_destroy(d);
+		}
+		g_free(filename);
+	}
+	gtk_widget_destroy(dialog);
+}
+
+static void hev_output_window_button_clear_real_clicked(GtkToolButton * button, gpointer data)
+{
+	HevOutputWindow * window = HEV_OUTPUT_WINDOW(data);
+	HevOutputWindowPrivate * priv = HEV_OUTPUT_WINDOW_GET_PRIVATE(window);
+	GtkTextBuffer * text_buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(priv->text_view));
+
+	gtk_text_buffer_set_text(text_buffer, "", -1);
+}
+
 static void hev_output_window_dispose(GObject * obj)
 {
 	HevOutputWindow * self = HEV_OUTPUT_WINDOW(obj);
@@ -52,25 +99,45 @@ static void hev_output_window_class_init(HevOutputWindowClass * klass)
 static void hev_output_window_init(HevOutputWindow * self)
 {
 	HevOutputWindowPrivate * priv = HEV_OUTPUT_WINDOW_GET_PRIVATE(self);
+	GtkWidget * vbox = NULL;
+	GtkWidget * toolbar = NULL;
+	GtkToolItem * button = NULL;
 	GtkWidget * scrolled_window = NULL;
 
 	gtk_window_set_title(GTK_WINDOW(self), "HevBrowser Output");
 	gtk_window_set_position(GTK_WINDOW(self), GTK_WIN_POS_CENTER_ALWAYS);
-	gtk_widget_set_size_request(GTK_WIDGET(self), 500, 300);
+	gtk_widget_set_size_request(GTK_WIDGET(self), 600, 350);
 	gtk_container_set_border_width(GTK_CONTAINER(self), 2);
+
+	vbox = gtk_vbox_new(FALSE, 0);
+	gtk_container_add(GTK_CONTAINER(self), vbox);
+
+	toolbar = gtk_toolbar_new();
+	gtk_box_pack_start(GTK_BOX(vbox), toolbar, FALSE, TRUE, 0);
+
+	button = gtk_tool_button_new_from_stock(GTK_STOCK_SAVE);
+	g_signal_connect(G_OBJECT(button), "clicked",
+				G_CALLBACK(hev_output_window_button_save_real_clicked), self);
+	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), button, -1);
+
+	button = gtk_tool_button_new_from_stock(GTK_STOCK_CLEAR);
+	g_signal_connect(G_OBJECT(button), "clicked",
+				G_CALLBACK(hev_output_window_button_clear_real_clicked), self);
+	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), button, -1);
 
 	scrolled_window = gtk_scrolled_window_new(NULL, NULL);
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled_window),
 				GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 	gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(scrolled_window),
 				GTK_SHADOW_IN);
-	gtk_container_add(GTK_CONTAINER(self), scrolled_window);
+	gtk_box_pack_start(GTK_BOX(vbox), scrolled_window, TRUE, TRUE, 0);
 
 	priv->text_view = gtk_text_view_new();
 	gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(scrolled_window),
 				priv->text_view);
 
-	gtk_widget_show_all(scrolled_window);
+	gtk_widget_show_all(vbox);
+	gtk_window_set_focus(GTK_WINDOW(self), priv->text_view);
 }
 
 GtkWidget * hev_output_window_new(void)
