@@ -279,10 +279,38 @@ static void hev_main_window_button_execute_real_clicked(GtkToolButton * button, 
 	/* call main END */
 }
 
+static void hev_main_window_button_show_output_win_real_clicked(GtkToolButton * button, gpointer data)
+{
+	HevMainWindow * window = HEV_MAIN_WINDOW(data);
+	HevMainWindowPrivate * priv = HEV_MAIN_WINDOW_GET_PRIVATE(window);
+
+	gtk_window_present(GTK_WINDOW(priv->output_window));
+}
+
+static void hev_main_window_button_show_about_dlg_real_clicked(GtkToolButton * button, gpointer data)
+{
+	HevMainWindow * window = HEV_MAIN_WINDOW(data);
+	HevMainWindowPrivate * priv = HEV_MAIN_WINDOW_GET_PRIVATE(window);
+	gchar * authors[] =
+	{
+		"Heiher <admin@heiher.info>",
+		NULL
+	};
+
+	gtk_show_about_dialog(GTK_WINDOW(window),
+				"program-name", "HevBrowser",
+				"title", "About HevBrowser",
+				"copyright", "Copyright © 2010 Heiher.info",
+				"website", "http://git.heiher.info/hevbrowser.git",
+				"website-label", "Code repository",
+				"version", "0.0.1",
+				"authors", authors,
+				NULL);
+}
+
 static void hev_main_window_real_accel_f5(HevMainWindow * self)
 {
-	HevMainWindow * window = HEV_MAIN_WINDOW(self);
-	HevMainWindowPrivate * priv = HEV_MAIN_WINDOW_GET_PRIVATE(window);
+	HevMainWindowPrivate * priv = HEV_MAIN_WINDOW_GET_PRIVATE(self);
 
 	webkit_web_view_reload(WEBKIT_WEB_VIEW(priv->web_view));
 }
@@ -421,6 +449,7 @@ static void hev_main_window_init(HevMainWindow * self)
 	GtkWidget * vbox = NULL;
 	GtkWidget * hbox = NULL;
 	GtkWidget * toolbar = NULL;
+	GtkToolItem * button = NULL;
 	GtkWidget * label = NULL;
 	GtkWidget * scrolled_window = NULL;
 	HevMainWindowPrivate * priv = HEV_MAIN_WINDOW_GET_PRIVATE(self);
@@ -494,6 +523,18 @@ static void hev_main_window_init(HevMainWindow * self)
 	g_signal_connect(G_OBJECT(priv->button_execute), "clicked",
 				G_CALLBACK(hev_main_window_button_execute_real_clicked), self);
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), priv->button_execute, -1);
+
+	button = gtk_tool_button_new_from_stock(GTK_STOCK_EDIT);
+	gtk_tool_item_set_tooltip_text(button, "Output window (F8)");
+	g_signal_connect(G_OBJECT(button), "clicked",
+				G_CALLBACK(hev_main_window_button_show_output_win_real_clicked), self);
+	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), button, -1);
+
+	button = gtk_tool_button_new_from_stock(GTK_STOCK_ABOUT);
+	gtk_tool_item_set_tooltip_text(button, "About");
+	g_signal_connect(G_OBJECT(button), "clicked",
+				G_CALLBACK(hev_main_window_button_show_about_dlg_real_clicked), self);
+	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), button, -1);
 
 	hbox = gtk_hbox_new(FALSE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
