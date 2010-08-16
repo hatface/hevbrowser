@@ -166,6 +166,7 @@ static void hev_output_window_init(HevOutputWindow * self)
 	gtk_window_set_position(GTK_WINDOW(self), GTK_WIN_POS_CENTER_ALWAYS);
 	gtk_widget_set_size_request(GTK_WIDGET(self), 600, 350);
 	gtk_container_set_border_width(GTK_CONTAINER(self), 2);
+	gtk_window_set_skip_taskbar_hint(GTK_WINDOW(self), TRUE);
 
 	vbox = gtk_vbox_new(FALSE, 0);
 	gtk_container_add(GTK_CONTAINER(self), vbox);
