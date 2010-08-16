@@ -145,6 +145,30 @@ static WebKitWebView * hev_main_window_web_view_real_create_web_view(WebKitWebVi
 	return web_view;
 }
 
+static void hev_main_window_button_open_file_real_clicked(GtkToolButton * button, gpointer data)
+{
+	HevMainWindow * window = HEV_MAIN_WINDOW(data);
+	HevMainWindowPrivate * priv = HEV_MAIN_WINDOW_GET_PRIVATE(window);
+	GtkWidget * dialog = NULL;
+
+	dialog = gtk_file_chooser_dialog_new("Open file",
+				GTK_WINDOW(window),
+				GTK_FILE_CHOOSER_ACTION_OPEN,
+				GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+				GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
+				NULL);
+	if(GTK_RESPONSE_ACCEPT == gtk_dialog_run(GTK_DIALOG(dialog)))
+	{
+		GString * url = g_string_new("");
+		gchar * filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
+		g_string_printf(url, "file://%s", filename);
+		webkit_web_view_open(WEBKIT_WEB_VIEW(priv->web_view), url->str);
+		g_free(filename);
+		g_string_free(url, TRUE);
+	}
+	gtk_widget_destroy(dialog);
+}
+
 static void hev_main_window_button_go_back_real_clicked(GtkToolButton * button, gpointer data)
 {
 	HevMainWindow * window = HEV_MAIN_WINDOW(data);
@@ -482,6 +506,12 @@ static void hev_main_window_init(HevMainWindow * self)
 
 	toolbar = gtk_toolbar_new();
 	gtk_box_pack_start(GTK_BOX(vbox), toolbar, FALSE, TRUE, 0);
+
+	button = gtk_tool_button_new_from_stock(GTK_STOCK_OPEN);
+	gtk_tool_item_set_tooltip_text(button, "Open file ...");
+	g_signal_connect(G_OBJECT(button), "clicked",
+				G_CALLBACK(hev_main_window_button_open_file_real_clicked), self);
+	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), button, -1);
 
 	priv->button_go_back = gtk_tool_button_new_from_stock(GTK_STOCK_GO_BACK);
 	gtk_tool_item_set_tooltip_text(priv->button_go_back, "Go back one page");
