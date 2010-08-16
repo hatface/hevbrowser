@@ -2,6 +2,8 @@
  * Heiher <admin@heiher.info>
  */
 
+#include <string.h>
+
 #include "hevoutputwindow.h"
 
 #define HEV_OUTPUT_WINDOW_GET_PRIVATE(obj)	(G_TYPE_INSTANCE_GET_PRIVATE((obj), HEV_TYPE_OUTPUT_WINDOW, HevOutputWindowPrivate))
@@ -26,35 +28,91 @@ static void hev_output_window_button_save_real_clicked(GtkToolButton * button, g
 	HevOutputWindowPrivate * priv = HEV_OUTPUT_WINDOW_GET_PRIVATE(window);
 	GtkTextBuffer * text_buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(priv->text_view));
 	GtkWidget * dialog = NULL;
+	GtkWidget * hbox = NULL;
+	GtkWidget * label = NULL;
+	GtkWidget * combo_box_entry = NULL;
 
+	hbox = gtk_hbox_new(FALSE, 0);
+	label = gtk_label_new("Character Encoding:");
+	combo_box_entry = gtk_combo_box_entry_new_text();
+	/* default encodings START */
+	gtk_combo_box_append_text(GTK_COMBO_BOX(combo_box_entry), "UTF-8");
+	gtk_combo_box_append_text(GTK_COMBO_BOX(combo_box_entry), "UTF-16");
+	gtk_combo_box_append_text(GTK_COMBO_BOX(combo_box_entry), "GB2312");
+	gtk_combo_box_append_text(GTK_COMBO_BOX(combo_box_entry), "GB18030");
+	gtk_combo_box_append_text(GTK_COMBO_BOX(combo_box_entry), "GBK");
+	gtk_combo_box_append_text(GTK_COMBO_BOX(combo_box_entry), "SHIFT-JIS");
+	/* default encodings END */
+	gtk_combo_box_set_active(GTK_COMBO_BOX(combo_box_entry), 0);
+	gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 0);
+	gtk_box_pack_start(GTK_BOX(hbox), combo_box_entry, TRUE, TRUE, 0);
+	gtk_widget_show_all(hbox);
 	dialog = gtk_file_chooser_dialog_new("Save file",
 				GTK_WINDOW(window),
 				GTK_FILE_CHOOSER_ACTION_SAVE,
 				GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
 				GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT,
 				NULL);
+	gtk_file_chooser_set_extra_widget(GTK_FILE_CHOOSER(dialog), hbox);
 	gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(dialog), TRUE);
 	if(GTK_RESPONSE_ACCEPT == gtk_dialog_run(GTK_DIALOG (dialog)))
 	{
-		gchar * filename = NULL, * text = NULL;
+		gchar * filename = NULL, * text = NULL, * encoding = NULL;
 		GtkTextIter start = {0}, end = {0};
+		GString * str = NULL;
+		gsize i = 0, len = 0;
+		gboolean convert_ok = TRUE;
 
 		gtk_text_buffer_get_start_iter(text_buffer, &start);
 		gtk_text_buffer_get_end_iter(text_buffer, &end);
+		encoding = gtk_combo_box_get_active_text(GTK_COMBO_BOX(combo_box_entry));
 		text = gtk_text_buffer_get_text(text_buffer, &start, &end, TRUE);
-		filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
-		if(!g_file_set_contents(filename, text, -1, NULL))
+		str = g_string_new("");
+		len = strlen(text);
+		for(i=0; i<len;)
 		{
-			GtkWidget * d = gtk_message_dialog_new(GTK_WINDOW(window),
-					GTK_DIALOG_DESTROY_WITH_PARENT,
-					GTK_MESSAGE_ERROR,
-					GTK_BUTTONS_CLOSE,
-					"Save to %s failed!", filename);
-			gtk_dialog_run(GTK_DIALOG(d));
-			gtk_widget_destroy(d);
+			gsize sr = 0, sw = 0;
+			gchar * p = NULL;
+
+			p = g_convert(text+i, len-i, encoding, "UTF-8", &sr, &sw, NULL);
+			if(NULL == p)
+			{
+				GtkWidget * d = gtk_message_dialog_new(GTK_WINDOW(window),
+						GTK_DIALOG_DESTROY_WITH_PARENT,
+						GTK_MESSAGE_ERROR,
+						GTK_BUTTONS_CLOSE,
+						"Convert encoding from UTF-8 to %s failed!", encoding);
+				gtk_dialog_run(GTK_DIALOG(d));
+				gtk_widget_destroy(d);
+				convert_ok = FALSE;
+				break;
+			}
+			else
+			{
+				g_string_append_len(str, p, sw);
+				i += sr;
+			}
 		}
-		g_free(filename);
+		if(convert_ok)
+		{
+			filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
+			if(!g_file_set_contents(filename, str->str, str->len, NULL))
+			{
+				GtkWidget * d = gtk_message_dialog_new(GTK_WINDOW(window),
+						GTK_DIALOG_DESTROY_WITH_PARENT,
+						GTK_MESSAGE_ERROR,
+						GTK_BUTTONS_CLOSE,
+						"Save to %s failed!", filename);
+				gtk_dialog_run(GTK_DIALOG(d));
+				gtk_widget_destroy(d);
+			}
+			g_free(filename);
+		}
+		g_free(encoding);
+		g_free(text);
+		g_string_free(str, TRUE);
 	}
+	gtk_widget_destroy(hbox);
 	gtk_widget_destroy(dialog);
 }
 
