@@ -17,11 +17,6 @@ struct _HevOutputWindowPrivate
 
 G_DEFINE_TYPE(HevOutputWindow, hev_output_window, GTK_TYPE_WINDOW);
 
-static void hev_output_window_real_destroy(GtkObject * obj)
-{
-	gtk_widget_hide(GTK_WIDGET(obj));
-}
-
 static void hev_output_window_button_save_real_clicked(GtkToolButton * button, gpointer data)
 {
 	HevOutputWindow * window = HEV_OUTPUT_WINDOW(data);
@@ -30,22 +25,22 @@ static void hev_output_window_button_save_real_clicked(GtkToolButton * button, g
 	GtkWidget * dialog = NULL;
 	GtkWidget * hbox = NULL;
 	GtkWidget * label = NULL;
-	GtkWidget * combo_box_entry = NULL;
+	GtkWidget * combo_box_text = NULL;
 
 	hbox = gtk_hbox_new(FALSE, 0);
 	label = gtk_label_new("Character Encoding:");
-	combo_box_entry = gtk_combo_box_entry_new_text();
+	combo_box_text = gtk_combo_box_text_new();
 	/* default encodings START */
-	gtk_combo_box_append_text(GTK_COMBO_BOX(combo_box_entry), "UTF-8");
-	gtk_combo_box_append_text(GTK_COMBO_BOX(combo_box_entry), "UTF-16");
-	gtk_combo_box_append_text(GTK_COMBO_BOX(combo_box_entry), "GB2312");
-	gtk_combo_box_append_text(GTK_COMBO_BOX(combo_box_entry), "GB18030");
-	gtk_combo_box_append_text(GTK_COMBO_BOX(combo_box_entry), "GBK");
-	gtk_combo_box_append_text(GTK_COMBO_BOX(combo_box_entry), "SHIFT-JIS");
+	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(combo_box_text), "UTF-8");
+	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(combo_box_text), "UTF-16");
+	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(combo_box_text), "GB2312");
+	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(combo_box_text), "GB18030");
+	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(combo_box_text), "GBK");
+	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(combo_box_text), "SHIFT-JIS");
 	/* default encodings END */
-	gtk_combo_box_set_active(GTK_COMBO_BOX(combo_box_entry), 0);
+	gtk_combo_box_set_active(GTK_COMBO_BOX(combo_box_text), 0);
 	gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 0);
-	gtk_box_pack_start(GTK_BOX(hbox), combo_box_entry, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(hbox), combo_box_text, TRUE, TRUE, 0);
 	gtk_widget_show_all(hbox);
 	dialog = gtk_file_chooser_dialog_new("Save file",
 				GTK_WINDOW(window),
@@ -65,7 +60,7 @@ static void hev_output_window_button_save_real_clicked(GtkToolButton * button, g
 
 		gtk_text_buffer_get_start_iter(text_buffer, &start);
 		gtk_text_buffer_get_end_iter(text_buffer, &end);
-		encoding = gtk_combo_box_get_active_text(GTK_COMBO_BOX(combo_box_entry));
+		encoding = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(combo_box_text));
 		text = gtk_text_buffer_get_text(text_buffer, &start, &end, TRUE);
 		str = g_string_new("");
 		len = strlen(text);
@@ -144,12 +139,12 @@ static void hev_output_window_finalize(GObject * obj)
 static void hev_output_window_class_init(HevOutputWindowClass * klass)
 {
 	GObjectClass * obj_class = G_OBJECT_CLASS(klass);
-	GtkObjectClass * gtk_obj_class = GTK_OBJECT_CLASS(klass);
+	GtkWidgetClass *widget_class = GTK_WIDGET_CLASS(klass);
 
 	obj_class->dispose = hev_output_window_dispose;
 	obj_class->finalize = hev_output_window_finalize;
 
-	gtk_obj_class->destroy = hev_output_window_real_destroy;
+	widget_class->destroy = gtk_widget_hide;
 
 	g_type_class_add_private(klass, sizeof(HevOutputWindowPrivate));
 }

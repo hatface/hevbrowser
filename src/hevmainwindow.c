@@ -45,7 +45,7 @@ static guint hev_main_window_signals[LAST_SIGNAL] = {0};
 
 G_DEFINE_TYPE(HevMainWindow, hev_main_window, GTK_TYPE_WINDOW);
 
-static void hev_main_window_real_destroy(GtkObject * obj)
+static void hev_main_window_real_destroy(GtkWidget *widget)
 {
 	gtk_main_quit();
 }
@@ -411,18 +411,18 @@ static void hev_main_window_finalize(GObject * obj)
 static void hev_main_window_class_init(HevMainWindowClass * klass)
 {
 	GObjectClass * obj_class = G_OBJECT_CLASS(klass);
-	GtkObjectClass * gtk_obj_class = GTK_OBJECT_CLASS(klass);
+	GtkWidgetClass *widget_class = GTK_WIDGET_CLASS(klass);
 
 	obj_class->dispose = hev_main_window_dispose;
 	obj_class->finalize = hev_main_window_finalize;
-
-	gtk_obj_class->destroy = hev_main_window_real_destroy;
 
 	klass->accel_f5 = hev_main_window_real_accel_f5;
 	klass->accel_f6 = hev_main_window_real_accel_f6;
 	klass->accel_f7 = hev_main_window_real_accel_f7;
 	klass->accel_f8 = hev_main_window_real_accel_f8;
 	klass->accel_esc = hev_main_window_real_accel_esc;
+
+	widget_class->destroy = hev_main_window_real_destroy;
 
 	g_type_class_add_private(klass, sizeof(HevMainWindowPrivate));
 
@@ -488,15 +488,15 @@ static void hev_main_window_init(HevMainWindow * self)
 	priv->accel_group = gtk_accel_group_new();
 	gtk_window_add_accel_group(GTK_WINDOW(self), priv->accel_group);
 
-	gtk_widget_add_accelerator(GTK_WIDGET(self), "accel_f5", priv->accel_group, GDK_F5,
+	gtk_widget_add_accelerator(GTK_WIDGET(self), "accel_f5", priv->accel_group, GDK_KEY_F5,
 				0, GTK_ACCEL_VISIBLE);
-	gtk_widget_add_accelerator(GTK_WIDGET(self), "accel_f6", priv->accel_group, GDK_F6,
+	gtk_widget_add_accelerator(GTK_WIDGET(self), "accel_f6", priv->accel_group, GDK_KEY_F6,
 				0, GTK_ACCEL_VISIBLE);
-	gtk_widget_add_accelerator(GTK_WIDGET(self), "accel_f7", priv->accel_group, GDK_F7,
+	gtk_widget_add_accelerator(GTK_WIDGET(self), "accel_f7", priv->accel_group, GDK_KEY_F7,
 				0, GTK_ACCEL_VISIBLE);
-	gtk_widget_add_accelerator(GTK_WIDGET(self), "accel_f8", priv->accel_group, GDK_F8,
+	gtk_widget_add_accelerator(GTK_WIDGET(self), "accel_f8", priv->accel_group, GDK_KEY_F8,
 				0, GTK_ACCEL_VISIBLE);
-	gtk_widget_add_accelerator(GTK_WIDGET(self), "accel_esc", priv->accel_group, GDK_Escape,
+	gtk_widget_add_accelerator(GTK_WIDGET(self), "accel_esc", priv->accel_group, GDK_KEY_Escape,
 				0, GTK_ACCEL_VISIBLE);
 
 	priv->output_window = hev_output_window_new();
