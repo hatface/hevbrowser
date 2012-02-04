@@ -17,6 +17,11 @@ struct _HevOutputWindowPrivate
 
 G_DEFINE_TYPE(HevOutputWindow, hev_output_window, GTK_TYPE_WINDOW);
 
+static void hev_output_window_real_destroy(GtkObject *object)
+{
+	gtk_widget_hide(GTK_WIDGET(object));
+}
+
 static void hev_output_window_button_save_real_clicked(GtkToolButton * button, gpointer data)
 {
 	HevOutputWindow * window = HEV_OUTPUT_WINDOW(data);
@@ -139,12 +144,12 @@ static void hev_output_window_finalize(GObject * obj)
 static void hev_output_window_class_init(HevOutputWindowClass * klass)
 {
 	GObjectClass * obj_class = G_OBJECT_CLASS(klass);
-	GtkWidgetClass *widget_class = GTK_WIDGET_CLASS(klass);
+	GtkObjectClass *object_class = GTK_OBJECT_CLASS(klass);
 
 	obj_class->dispose = hev_output_window_dispose;
 	obj_class->finalize = hev_output_window_finalize;
 
-	widget_class->destroy = gtk_widget_hide;
+	object_class->destroy = hev_output_window_real_destroy;
 
 	g_type_class_add_private(klass, sizeof(HevOutputWindowPrivate));
 }

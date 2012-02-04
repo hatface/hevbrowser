@@ -3,8 +3,8 @@
 PP=cpp
 CC=gcc
 STRIP=strip
-CCFLAGS=-O2 `pkg-config --cflags gtk+-3.0 webkitgtk-3.0 javascriptcoregtk-3.0`
-LDFLAGS=`pkg-config --libs gtk+-3.0 webkitgtk-3.0 javascriptcoregtk-3.0`
+CCFLAGS=-O2 `pkg-config --cflags gtk+-2.0 webkit-1.0 javascriptcoregtk-1.0`
+LDFLAGS=`pkg-config --libs gtk+-2.0 webkit-1.0 javascriptcoregtk-1.0`
 
 SRCDIR=src
 BINDIR=bin
