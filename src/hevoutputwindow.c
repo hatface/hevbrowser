@@ -27,7 +27,7 @@ static void hev_output_window_button_save_real_clicked(GtkToolButton * button, g
 	GtkWidget * label = NULL;
 	GtkWidget * combo_box_text = NULL;
 
-	hbox = gtk_hbox_new(FALSE, 0);
+	hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 	label = gtk_label_new("Character Encoding:");
 	combo_box_text = gtk_combo_box_text_new();
 	/* default encodings START */
@@ -163,7 +163,7 @@ static void hev_output_window_init(HevOutputWindow * self)
 	gtk_container_set_border_width(GTK_CONTAINER(self), 2);
 	gtk_window_set_skip_taskbar_hint(GTK_WINDOW(self), TRUE);
 
-	vbox = gtk_vbox_new(FALSE, 0);
+	vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 	gtk_container_add(GTK_CONTAINER(self), vbox);
 
 	toolbar = gtk_toolbar_new();

@@ -501,7 +501,7 @@ static void hev_main_window_init(HevMainWindow * self)
 
 	priv->output_window = hev_output_window_new();
 
-	vbox = gtk_vbox_new(FALSE, 0);
+	vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 	gtk_container_add(GTK_CONTAINER(self), vbox);
 
 	toolbar = gtk_toolbar_new();
@@ -566,7 +566,7 @@ static void hev_main_window_init(HevMainWindow * self)
 				G_CALLBACK(hev_main_window_button_show_about_dlg_real_clicked), self);
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), button, -1);
 
-	hbox = gtk_hbox_new(FALSE, 0);
+	hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 
 	label = gtk_label_new("Location:");
@@ -598,7 +598,7 @@ static void hev_main_window_init(HevMainWindow * self)
 	gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(scrolled_window),
 				priv->web_view);
 
-	hbox = gtk_hbox_new(FALSE, 0);
+	hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 
 	priv->label = gtk_label_new("Welcome!");
